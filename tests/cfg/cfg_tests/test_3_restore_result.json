@@ -1,0 +1,13 @@
+{
+    "task_data": {
+        "task_name": "restore last reversed result",
+        "task_parameters": null,
+        "request_type": "get"
+    },
+    "return_data": {
+        "return_value": "dog lazy the over jumps fox brown quick The",
+        "status_code": 200,
+		"validate_resp_val": true
+    },
+    "api_path": "/api/task/restore"
+}
