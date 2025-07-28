@@ -1,5 +1,3 @@
-"""Minimal setup file for NeuReality assignment."""
-
 from setuptools import find_packages, setup
 
 def parse_requirements(filename)-> list:
@@ -10,8 +8,8 @@ setup(
     name='NeuRealityProject',
     version='0.1.0',
     description='NeuReality task assignment',
-    packages=find_packages(),
-    package_dir={'': 'app'},
+    packages=find_packages('tests'),
+    package_dir={'': 'tests'},
     package_data={
         "cfg.cfg_global": ["*.json"],
         "cfg.cfg_tests": ["*.json"]
