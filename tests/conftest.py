@@ -4,14 +4,14 @@ import time
 import logging
 import docker
 import requests
-from typing import Dict
 from _pytest.fixtures import fixture
 from importlib.resources import files
 from tests.cfg.cfg_global import settings
+from tests.utils.data_to_obj import FullRequest
 
 
 @fixture(scope="session")
-def fastapi_container():
+def app_container():
     client = docker.from_env()
 
     # Launch a container based on the app image
@@ -28,7 +28,7 @@ def fastapi_container():
             if response.status_code == settings.success_resp:
                 break
         except requests.ConnectionError:
-            time.sleep(1)
+            time.sleep(settings.sleep_time)
     else:
         container.stop()
         container.remove()
@@ -50,7 +50,8 @@ def load_test_params(path) -> dict:
         data = json.loads(file.read())
     return data
 
-def cfg_get_data(test_name: str) -> Dict | None:
+
+def cfg_get_data(test_name: str) -> object | None:
     """
     Rendering config data out of a template cfg file
     :param test_name:
@@ -60,6 +61,7 @@ def cfg_get_data(test_name: str) -> Dict | None:
     cfg_template_dir = settings.cfg_tests_dir
     cfg_template_file = files(cfg_template_dir).joinpath(test_name)
     if cfg_template_file.exists():
-        return load_test_params(cfg_template_file)
+        json_params =  load_test_params(cfg_template_file)
+        return FullRequest(**json_params)
     return None
 

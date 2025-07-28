@@ -8,8 +8,8 @@ setup(
     name='NeuRealityProject',
     version='0.1.0',
     description='NeuReality task assignment',
-    packages=find_packages('tests'),
-    package_dir={'': 'tests'},
+    packages=find_packages(where="."),  # searches from current directory
+    package_dir={"": "."},              # maps root to actual package structure
     package_data={
         "cfg.cfg_global": ["*.json"],
         "cfg.cfg_tests": ["*.json"]

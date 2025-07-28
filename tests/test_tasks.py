@@ -1,3 +1,4 @@
+import json
 import logging
 import pytest
 import requests
@@ -7,25 +8,25 @@ from conftest import cfg_get_data
 
 
 @pytest.mark.parametrize('test_name', [resource.name for resource in files(settings.cfg_tests_dir).iterdir()])
-def test_perform_tasks(fastapi_container, test_name: str) -> None:
+def test_perform_tasks(app_container, test_name: str) -> None:
     """
     Testing various task using the files in app.cfg.cfg_tests as input (parameterized test)
-    :param api_client: the FastAPI client
+    :param app_container: the container in which the app resides in
     :param test_name: test name as taken from app.cfg.cfg_tests folder
     :return:
     """
     cfg_data = cfg_get_data(test_name)
-    task_data = cfg_data['task_data']
-    req_type = task_data['request_type']
-    expected_data = cfg_data['return_data']
-    api_path = cfg_data['api_path']
+    task_data = cfg_data.task_data
+    req_type = task_data.request_type
+    expected_data = cfg_data.return_data
+    api_path = cfg_data.api_path
     uri = f'{settings.app_uri}{api_path}'
-    response = requests.get(uri) if req_type == 'get' else requests.post(uri, json=task_data)
+    response = requests.get(uri) if req_type == 'get' else requests.post(uri, json=task_data.model_dump())
     res = response.json()
     logging.info(F"response from api-client: {res}")
-    assert response.status_code == expected_data['status_code'], \
-        F"Expected status code: {expected_data['status_code']}, actual: {response.status_code}"
-    if expected_data['validate_resp_val']:
-        assert res.get('result') == expected_data[
-            'return_value'], F"wrong response val: {res['return_value']}, expected: {expected_data['return_value']}"
+    assert response.status_code == expected_data.status_code, \
+        F"Expected status code: {expected_data.status_code}, actual: {response.status_code}"
+    if expected_data.validate_resp_val:
+        assert res.get('result') == expected_data.return_value, (F"wrong response val: {res['return_value']}, "
+                                                                 F"expected: {expected_data.return_value}")
 
