@@ -1,7 +1,10 @@
 .idea
 .idea/*
-app/NeuRealityProject.egg-info
-clean.ps1
 logs/*
 .venv/
 .venv
+clean.ps1
+app/NeuRealityProject.egg-info
+tests/NeuRealityProject.egg-info
+NeuRealityProject.egg-info
+

@@ -1,7 +1,9 @@
+import sys
 import time
-import uvicorn
+from pathlib import Path
 from fastapi import FastAPI, Request
 from starlette.responses import JSONResponse
+sys.path.append(str(Path(__file__).resolve().parents[3]))
 from app.clients.fastapi.routers import tasks
 from starlette.exceptions import HTTPException as StarletteHTTPException
 
@@ -25,6 +27,3 @@ async def http_exception_handler(request: Request, exc):
         status_code=exc.status_code,
         content={"message": F"Bad request, request:{request.url}, Error: {exc.detail}"})
 
-
-if __name__ == '__main__':
-    uvicorn.run("tasks_base:app", reload=True)
