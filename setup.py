@@ -11,8 +11,8 @@ setup(
     packages=find_packages(where="."),  # searches from current directory
     package_dir={"": "."},              # maps root to actual package structure
     package_data={
-        "cfg.cfg_global": ["*.json"],
-        "cfg.cfg_tests": ["*.json"]
+        "tests.cfg.cfg_global": ["*.json"],
+        "tests.cfg.cfg_tests": ["*.json"]
     },
 
     # metadata

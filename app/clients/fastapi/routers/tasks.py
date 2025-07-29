@@ -3,6 +3,12 @@ from app.clients.fastapi.schemas import TaskInput, TaskOutput
 
 router = APIRouter(prefix="/api/task")
 land_page = APIRouter()
+health_check = APIRouter(prefix="/health")
+
+
+@health_check.get("/")
+def health_msg():
+    return {"status": "ok"}
 
 
 @land_page.get("/")

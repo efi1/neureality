@@ -1,6 +1,8 @@
 .idea
 .idea/*
 logs/*
+logs
+reports
 .venv/
 .venv
 clean.ps1

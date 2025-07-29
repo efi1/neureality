@@ -3,42 +3,57 @@ import json
 import time
 import logging
 import docker
-import requests
 from _pytest.fixtures import fixture
 from importlib.resources import files
 from tests.cfg.cfg_global import settings
+from tests.utils.collect_container_logs import collect_container_logs
 from tests.utils.data_to_obj import FullRequest
+
+logger = logging.getLogger(__name__)
+
+
+def is_container_healthy(container: object, timeout_seconds: int, interval: int = 1, elapsed: int = 0) -> bool:
+    # Is the container in a healthy state after the wait period
+    while elapsed < timeout_seconds:
+        container.reload()
+        status = container.attrs.get("State", {}).get("Health", {}).get("Status")
+        if status == "healthy":
+            return True
+        elif status in ("unhealthy", "exited"):
+            break
+        time.sleep(interval)
+        elapsed += interval
+    return False
 
 
 @fixture(scope="session")
 def app_container():
     client = docker.from_env()
 
-    # Launch a container based on the app image
+    # start the container with auto_remove - delete the container after it stops
     container = client.containers.run(
         settings.image_name,
         ports=settings.ports,
-        detach=True
+        detach=True,
+        auto_remove=True
     )
 
-    # wait for the container to be launched
-    for _ in range(settings.container_run_waiting_time):
+    try:
+        if not is_container_healthy(container, settings.container_timeout, settings.sleep_time):
+            raise RuntimeError(F"App container did not become available after {settings.container_timeout} sec.")
+
+        yield container
+
+        collect_container_logs(container, logger)
+
+    finally: # cleanup - stop the container at the end of tests, remove is done automatically (auto_remove)
+
         try:
-            response = requests.get(settings.app_uri)
-            if response.status_code == settings.success_resp:
-                break
-        except requests.ConnectionError:
-            time.sleep(settings.sleep_time)
-    else:
-        container.stop()
-        container.remove()
-        raise RuntimeError(settings.app_not_available_msg)
+            container.stop()
+            logger.info("Container stopped successfully")
 
-    yield container
-
-    # teardown container at the end of tests
-    container.stop()
-    container.remove()
+        except Exception as e:
+            logger.info("Container already stopped or removed:", e)
 
 
 def load_test_params(path) -> dict:
@@ -64,4 +79,3 @@ def cfg_get_data(test_name: str) -> object | None:
         json_params =  load_test_params(cfg_template_file)
         return FullRequest(**json_params)
     return None
-
