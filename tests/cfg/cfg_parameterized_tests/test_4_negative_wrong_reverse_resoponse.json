@@ -1,0 +1,13 @@
+{
+    "task_data": {
+        "task_name": "string reverse",
+        "task_parameters": {"given string": "The quick brown fox jumps over the lazy dog"},
+        "request_type": "post"
+    },
+    "return_data": {
+        "return_value": "dog lazy the over jumps fox brown quick the",
+        "status_code": 200,
+		"validate_resp_val": true
+    },
+    "api_path": "/api/task/reverse"
+}

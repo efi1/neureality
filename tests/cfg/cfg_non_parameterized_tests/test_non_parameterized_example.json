@@ -1,0 +1,13 @@
+{
+    "task_data": {
+        "task_name": "api landing page",
+        "task_parameters": null,
+        "request_type": "get"
+    },
+    "return_data": {
+        "return_value": "Welcome to reverse and restore handler",
+        "status_code": 200,
+		"validate_resp_val": true
+    },
+    "api_path": ""
+}
