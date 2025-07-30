@@ -32,5 +32,5 @@ async def add_process_time_header(request: Request, call_next):
 async def http_exception_handler(request: Request, exc):
     return JSONResponse(
         status_code=exc.status_code,
-        content={"message": F"Bad request, request:{request.url}, Error: {exc.detail}"})
+        content={"result": F"Bad request, request:{request.url}, Error: {exc.detail}"})
 
