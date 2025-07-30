@@ -1,4 +1,4 @@
-## 🐳 Python HTTP App with Docker + Pytest
+# Python HTTP App with Docker + Pytest
 
 <br>This project includes:
 
@@ -45,7 +45,7 @@ Supports easy extension with more tests
     ├── Dockerfile                           # Builds and runs the FastAPI app in a container
 
 
-<br>🚀 Application
+## Application
 
 A Docker container running a Python HTTP application built with FastAPI.
 
@@ -53,7 +53,7 @@ A pre-built Docker image is available and automatically pulled from DockerHub wh
 
 The image is built using a Dockerfile located at the project root.
 
-The application source code used in the image is located under the /app directory.
+The application source code used in the image is located under the /app directory (app is under the root project).
 
 The application exposes the following four RESTful APIs:
 
@@ -102,7 +102,7 @@ Response:
 }
 
 
-### 🐳 Running the Docker App
+## Running the Docker App
 
 Running the Docker container is handled automatically before tests begin.
 
@@ -119,7 +119,7 @@ If not, the test run will fail early, ensuring the created container is removed.
 
 When the tests end, the container is stopped and removed.
 
-### 🧪 Tests Structure
+## Tests Structure
 There are two types of tests supported:
 
 - Parameterized tests
@@ -148,43 +148,44 @@ __cfg_non_parameterized_tests/__
 Contains data files for non-parameterized (single run) test cases.
 
 
-### ➕ Adding a Test
+### Adding a Test
 The test suite supports both parameterized and non-parameterized test types.
 Each is configured by adding a JSON file in the appropriate directory under tests/cfg.
 
 
 ✅ Adding a Parameterized Test
-1. Create a new JSON file under:
+* Create a new JSON file under:
 tests/cfg/cfg_parameterized_tests/
 
-2. he file name can be arbitrary, but it must have a .json extension.
+* The file name can be arbitrary, but it must have a .json extension.
 
-3. Once added, the test data will be picked up automatically by the existing parameterized test in test_tasks.py.
+* Once added, the test data will be picked up automatically by the existing parameterized test in test_tasks.py.
 
-4. The test function is already implemented and accepts two inputs:
+* The test function is already implemented and accepts two inputs:
 
 app_container: the running Docker container (provided via a fixture).
 
 test_name: the name of the test case (taken from the JSON filename).
 
-    @pytest.mark.parametrize('test_name', [
-        resource.name
-        for resource in files(settings.parameterized_tests_dir).iterdir()
-    ])
-    def test_perform_tasks(app_container: object, test_name: str) -> None:
-        ...
+
+        @pytest.mark.parametrize('test_name', [
+            resource.name
+            for resource in files(settings.parameterized_tests_dir).iterdir()
+        ])
+        def test_perform_tasks(app_container: object, test_name: str) -> None:
+            ...
 
 
 📌 Note: There is no need to manually register new test functions.
 Each JSON file in cfg_parameterized_tests/ will be executed automatically.
 
 ✅ Adding a Non-Parameterized Test
-1. Create a new JSON file under:
+* Create a new JSON file under:
 tests/cfg/cfg_non_parameterized_tests/
 
-2. The file name must start with the word "test_" and have a .json extension, so that pytest recognizes it.
+* The file name must start with the word "test_" and have a .json extension, so that pytest recognizes it.
 
-3. In test_tasks.py, add a function with the same name as the JSON file, but without the .json extension.
+* In test_tasks.py, add a function with the same name as the JSON file, but without the .json extension.
 
 Example:
 If the file is named test_example_1.json, define a function:
@@ -192,13 +193,13 @@ If the file is named test_example_1.json, define a function:
     def test_example_1(app_container, load_test_data):
         ...
 
-4. The test function must accept the following arguments:
+* The test function must accept the following arguments:
 
 app_container: the Docker container running the app.
 
 load_test_data: fixture that automatically loads the corresponding JSON file.
 
-<br>📄 Test Data Structure
+## Test Data Structure
 
 Each test case is defined in a JSON file with the following structure:
 
@@ -218,35 +219,35 @@ Each test case is defined in a JSON file with the following structure:
         "api_path": "/api/task/reverse"
     }
 
-🧩 Required Structure
+### Required Structure
 The JSON file must include three main keys:
 
-"task_data" — describes the request to send
+- "task_data" — describes the request to send
 
-"return_data" — describes the expected response
+- "return_data" — describes the expected response
 
-"api_path" — the endpoint to target
+- "api_path" — the endpoint to target
 
 Each section must include the following subkeys:
 
 ✅ task_data must contain:
-task_name (mandatory)
+- task_name (mandatory)
 
-task_parameters (can be null or an empty object, but key must exist)
+- task_parameters (can be null or an empty object, but key must exist)
 
-request_type (mandatory)
+- request_type (mandatory)
 
 ✅ return_data must contain:
-return_value (can be null or an empty string, but key must exist)
+- return_value (can be null or an empty string, but key must exist)
 
-status_code (mandatory)
+- status_code (mandatory)
 
-validate_resp_val (mandatory)
+- validate_resp_val (mandatory)
 
 ✅ api_path:
 Must be a valid endpoint string (mandatory)
 
-❗ Negative Test Examples
+#### Negative Test Examples
 
 You can review intentionally misconfigured cases under:
 tests/cfg/cfg_parameterized_tests/
@@ -254,22 +255,143 @@ tests/cfg/cfg_parameterized_tests/
 These negative tests demonstrate what happens when required keys are missing or malformed — they are designed to fail and validate error handling in the API.
 
 
-⚙️ Performance Testing 
+## Performance Testing 
 Performance tests are not yet implemented.
 
 A performance test type could simulate a group of users sending simultaneous GET and POST requests to the FastAPI application.
 
-🔧 Conceptual behavior:
+### Conceptual behavior:
 Launch multiple threads or asynchronous workers to hit /reverse and /restore endpoints concurrently.
+Measure:  Response times, Server throughput, Error rates under load
 
-Measure:
 
-Response times
+## Loading Test Data
+Test input data is stored in JSON files and automatically loaded into the test functions.
 
-Server throughput
+✅ Parameterized Tests
+In parameterized tests (e.g. test_perform_tasks), the first line inside the test function calls:
 
-Error rates under load
+test_data = get_param_data(test_name)
+get_param_data is defined in conftest.py. It:
 
-This can help evaluate the app’s behavior under high demand and ensure it remains responsive and stable.
+- Locates the correct test JSON file by its name (file is located under cfg_non_parameterized_tests/).
 
+- Reads and parses the file.
+
+- Returns a structured object containing all required data for the test.
+
+✅ Unparameterized Tests
+In non-parameterized (individual) tests, data is automatically provided by the load_test_data fixture:
+
+    def test_example_1(app_container, load_test_data):
+        ...
+    
+The fixture load_test_data:
+- Uses pytest’s request.node.name to dynamically identify which JSON file to load — based on the name of the test function.
+
+- Locates the matching JSON file in cfg_non_parameterized_tests/
+
+- Loads and returns the test data to the function
+
+📌 Both methods ensure each test receives the correct input without hardcoding paths or filenames.
+
+## JUnit Test Report
+A JUnit-compatible XML report is automatically generated during test execution.
+
+* Where it's saved:
+The report file is created in a directory called:
+./reports/ 
+
+### Automatic Generation
+
+The pytest.ini includes the following setting to always generate the JUnit report:
+
+    [pytest]    
+    addopts = --junitxml=reports/test_results.xml
+    This ensures that every test run will produce a report file at:
+    reports/test_results.xml
+
+### Manual Trigger (Optional)
+
+You can also run tests and explicitly generate the JUnit file by including the --junitxml flag:
+
+    python -m pytest --junitxml=reports/test_results.xml
+    
+- You should remove the definition from pytest.ini (in case of running it manually).
+
+## Logging
+
+Test execution logs are generated automatically and saved to the ./logs/ directory.
+- Logging behavior is configured in the pytest.ini file.
+
+
+## Before running the tests:
+* Clone it from GitHub to your local environment.
+
+* Create a Python virtual environment and activate it (instructions can be found later in the text below).
+
+* Upgrade the pip package by:
+
+    python -m pip install --upgrade pip
+
+* Install setup.py by:
+
+
+      python -m pip install . (include the dot at the end) — see elaboration below.
+
+
+### The setup.py file 
+
+* Installs your package into the virtual environment.
+
+* Registers your project source directory (e.g. app/) as an importable module.
+
+* Resolves internal imports using dot notation, like:
+
+    from app.clients.fastap.routes import tasks
+
+
+## To run the tests via pytest (for both Windows and Linux)
+
+* First, install the setup.py as mentioned before.
+
+To run the test via CLI, while in the __project root__ (and virtualenv is activated), type:
+
+    python -m pytest
+
+### To create a virtualenv (and activate it):
+
+#### On Windows:
+* Create a virtualenv:
+
+    c:\path\to\python -m venv c:\path\to\myenv\venv
+
+Or while residing in the root of the Python project directory (assuming python.exe is callable):
+
+    python -m venv .\venv
+
+* Activate the virtualenv:
+While residing in the root of the Python project directory:
+.\venv\Scripts\Activate.ps1
+
+#### On Linux (Debian/Ubuntu):
+* Update your Ubuntu environment first:
+  
+    sudo apt-get update (you may add the flag: --fix-missing if problems persist)
+
+* Install venv package:
+
+    sudo apt install python3-venv
+
+* Create the virtualenv:
+  
+    python -m venv /mnt/d/Neureality/venv
+
+* To activate virtual env (Linux):
+While residing in the root of the Python project directory:
+
+    source venv/bin/activate
+
+* To exit virtual env (for both Linux and Windows):
+Type: deactivate
 
