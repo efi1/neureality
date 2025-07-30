@@ -14,7 +14,7 @@ def health_msg():
 @land_page.get("/")
 def welcome():
     """returns friendly welcome message"""
-    return {"message": F"Welcome to reverse and restore handler"}
+    return {"result": F"Welcome to reverse and restore handler"}
 
 
 @router.post("/reverse", response_model=TaskOutput)

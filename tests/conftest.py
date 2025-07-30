@@ -1,15 +1,19 @@
 """Shared fixtures."""
-import json
 import time
 import logging
+import json
 import docker
+from pathlib import Path
+from importlib.abc import Traversable
 from _pytest.fixtures import fixture
 from importlib.resources import files
 from tests.cfg.cfg_global import settings
-from tests.utils.collect_container_logs import collect_container_logs
 from tests.utils.data_to_obj import FullRequest
+from tests.utils.collect_container_logs import collect_container_logs
+
 
 logger = logging.getLogger(__name__)
+
 
 
 def is_container_healthy(container: object, timeout_seconds: int, interval: int = 1, elapsed: int = 0) -> bool:
@@ -56,7 +60,7 @@ def app_container():
             logger.info("Container already stopped or removed:", e)
 
 
-def load_test_params(path) -> dict:
+def read_json_file(path: Path) -> dict:
     """
     Read from cfg_test file and get the test's parameters
     :return:  test's parameters
@@ -66,16 +70,32 @@ def load_test_params(path) -> dict:
     return data
 
 
-def cfg_get_data(test_name: str) -> object | None:
-    """
-    Rendering config data out of a template cfg file
-    :param test_name:
-    :return: dict test's data
-    """
-    logging.info(F"load cfg_data for {test_name.split('.')[0]}")
-    cfg_template_dir = settings.cfg_tests_dir
-    cfg_template_file = files(cfg_template_dir).joinpath(test_name)
-    if cfg_template_file.exists():
-        json_params =  load_test_params(cfg_template_file)
+def share_get_data_logic(cfg_dir: str, test_name: str) -> FullRequest | None:
+    cfg_file: Path | Traversable = files(cfg_dir).joinpath(test_name)
+    if cfg_file.exists():
+        json_params = read_json_file(cfg_file)
         return FullRequest(**json_params)
     return None
+
+
+@fixture(scope="function")
+def load_test_data(request) -> FullRequest | None:
+    """
+    Rendering config data out of a template cfg file - for non parameterized test
+    :return: tests data as a class object
+    """
+    test_name = request.node.name
+    logging.info(F"load cfg_data for {test_name}")
+    cfg_dir = settings.non_parameterized_tests_dir
+    return share_get_data_logic(cfg_dir, f'{test_name}.json')
+
+
+def get_param_data(test_name: str) -> FullRequest | None:
+    """
+    Rendering config data out of a template cfg file - for parameterized test
+    :param test_name: name as given by test when it is being executed
+    :return: tests data as a class object
+    """
+    logging.info(F"load cfg_data for {test_name.split('.')[0]}")
+    cfg_dir = settings.parameterized_tests_dir
+    return share_get_data_logic(cfg_dir, test_name)

@@ -12,7 +12,8 @@ setup(
     package_dir={"": "."},              # maps root to actual package structure
     package_data={
         "tests.cfg.cfg_global": ["*.json"],
-        "tests.cfg.cfg_tests": ["*.json"]
+        "tests.cfg.cfg_parameterized_tests": ["*.json"],
+        "tests.cfg.cfg_non_parameterized_tests": ["*.json"]
     },
 
     # metadata
