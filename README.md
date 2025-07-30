@@ -300,8 +300,7 @@ The fixture load_test_data:
 A JUnit-compatible XML report is automatically generated during test execution.
 
 * Where it's saved:
-The report file is created in a directory called:
-./reports/ 
+The report file is generated in the ./reports/ directory, which is dynamically created during test execution.
 
 ### Automatic Generation
 
@@ -322,9 +321,9 @@ You can also run tests and explicitly generate the JUnit file by including the -
 
 ## Logging
 
-Test execution logs are generated automatically and saved to the ./logs/ directory.
-- Logging behavior is configured in the pytest.ini file.
+The log file is generated in the ./logs/ directory, which is dynamically created during test execution.
 
+- Logging behavior is configured in the pytest.ini file.
 
 ## Before running the tests:
 * Clone it from GitHub to your local environment.
