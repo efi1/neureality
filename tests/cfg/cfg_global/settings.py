@@ -1,5 +1,3 @@
-from time import sleep
-
 parameterized_tests_dir = 'tests.cfg.cfg_parameterized_tests'
 non_parameterized_tests_dir = 'tests.cfg.cfg_non_parameterized_tests'
 image_name = 'efiradware/reverse-restore-app:latest'

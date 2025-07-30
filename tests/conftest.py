@@ -15,7 +15,6 @@ from tests.utils.collect_container_logs import collect_container_logs
 logger = logging.getLogger(__name__)
 
 
-
 def is_container_healthy(container: object, timeout_seconds: int, interval: int = 1, elapsed: int = 0) -> bool:
     # Is the container in a healthy state after the wait period
     while elapsed < timeout_seconds:
