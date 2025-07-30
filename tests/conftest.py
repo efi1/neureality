@@ -8,7 +8,7 @@ from importlib.abc import Traversable
 from _pytest.fixtures import fixture
 from importlib.resources import files
 from tests.cfg.cfg_global import settings
-from tests.utils.data_to_obj import FullRequest
+from tests.utils.data_to_obj import FullRequest, PartialRequest
 from tests.utils.collect_container_logs import collect_container_logs
 
 
@@ -73,8 +73,8 @@ def share_get_data_logic(cfg_dir: str, test_name: str) -> FullRequest | None:
     cfg_file: Path | Traversable = files(cfg_dir).joinpath(test_name)
     if cfg_file.exists():
         json_params = read_json_file(cfg_file)
-        return FullRequest(**json_params)
-    return None
+        return PartialRequest(**json_params) if json_params.get('partial_request') else FullRequest(**json_params)
+    raise ValueError(f'Test {test_name} has no data – please check the test input file')
 
 
 @fixture(scope="function")

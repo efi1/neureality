@@ -44,13 +44,11 @@ def test_perform_tasks(app_container: object, test_name: str) -> None:
                                                                  F"expected: {expected_data.return_value}\n")
 
 
-# @pytest.mark.slow
-def test_non_parameterized_example(app_container: object, load_test_data: FullRequest) -> None:
+def test_negative_422_missing_required_field(app_container: object, load_test_data: FullRequest) -> None:
     """
-    Testing a specific task using the files in app.cfg.cfg_non_parameterized_tests as input
+    A POST request with the task_name required field missing from the request body - http 422 Unprocessable Entity
     :param app_container: the docker container in which the app resides in
     :param load_test_data: the test data
-    :return: no return. assertion is made on the api response
     """
     resp: Tuple[Response, ReturnData] = shared_test_logic(load_test_data)
     response, expected_data = resp
@@ -58,9 +56,25 @@ def test_non_parameterized_example(app_container: object, load_test_data: FullRe
     logger.info(F"response from api-client: {resp}")
     # Check that the API response is as expected
     assert response.status_code == expected_data.status_code, \
-        F"\nExpected status code: {expected_data.status_code}\nactual: {response.status_code}, {res_json.get('result')}.\n"
+        (F"\nExpected status code: {expected_data.status_code}\nactual: {response.status_code}, "
+         F"Error msg: {res_json.get('detail')[0].get('msg') if not res_json.get('result') else res_json.get('result')}.\n")
     # Check that the API response's content is as expected
     if expected_data.validate_resp_val:
         assert res_json.get('result') == expected_data.return_value, (F"\nwrong response val: {res_json.get('result')}\n"
                                                                  F"expected: {expected_data.return_value}\n")
 
+
+def test_negative_404_missing_string_input(app_container: object, load_test_data: FullRequest) -> None:
+    """  A POST request with the given string value missing from the request body - http 404 Not Found """
+    resp: Tuple[Response, ReturnData] = shared_test_logic(load_test_data)
+    response, expected_data = resp
+    res_json = response.json()
+    logger.info(F"response from api-client: {resp}")
+    # Check that the API response is as expected
+    assert response.status_code == expected_data.status_code, \
+        (F"\nExpected status code: {expected_data.status_code}\nactual: {response.status_code}, "
+         F"Error msg: {res_json.get('detail')[0].get('msg') if not res_json.get('result') else res_json.get('result')}.\n")
+    # Check that the API response's content is as expected
+    if expected_data.validate_resp_val:
+        assert res_json.get('result') == expected_data.return_value, (F"\nwrong response val: {res_json.get('result')}\n"
+                                                                 F"expected: {expected_data.return_value}\n")

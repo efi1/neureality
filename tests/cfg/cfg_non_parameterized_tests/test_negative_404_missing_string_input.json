@@ -6,7 +6,7 @@
     },
     "return_data": {
         "return_value": null,
-        "status_code": 400,
+        "status_code": 200,
 		"validate_resp_val": true
     },
     "api_path": "/api/task/reverse"
