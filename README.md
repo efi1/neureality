@@ -148,3 +148,128 @@ __cfg_non_parameterized_tests/__
 Contains data files for non-parameterized (single run) test cases.
 
 
+### ➕ Adding a Test
+The test suite supports both parameterized and non-parameterized test types.
+Each is configured by adding a JSON file in the appropriate directory under tests/cfg.
+
+
+✅ Adding a Parameterized Test
+1. Create a new JSON file under:
+tests/cfg/cfg_parameterized_tests/
+
+2. he file name can be arbitrary, but it must have a .json extension.
+
+3. Once added, the test data will be picked up automatically by the existing parameterized test in test_tasks.py.
+
+4. The test function is already implemented and accepts two inputs:
+
+app_container: the running Docker container (provided via a fixture).
+
+test_name: the name of the test case (taken from the JSON filename).
+
+    @pytest.mark.parametrize('test_name', [
+        resource.name
+        for resource in files(settings.parameterized_tests_dir).iterdir()
+    ])
+    def test_perform_tasks(app_container: object, test_name: str) -> None:
+        ...
+
+
+📌 Note: There is no need to manually register new test functions.
+Each JSON file in cfg_parameterized_tests/ will be executed automatically.
+
+✅ Adding a Non-Parameterized Test
+1. Create a new JSON file under:
+tests/cfg/cfg_non_parameterized_tests/
+
+2. The file name must start with the word "test_" and have a .json extension, so that pytest recognizes it.
+
+3. In test_tasks.py, add a function with the same name as the JSON file, but without the .json extension.
+
+Example:
+If the file is named test_example_1.json, define a function:
+
+    def test_example_1(app_container, load_test_data):
+        ...
+
+4. The test function must accept the following arguments:
+
+app_container: the Docker container running the app.
+
+load_test_data: fixture that automatically loads the corresponding JSON file.
+
+<br>📄 Test Data Structure
+
+Each test case is defined in a JSON file with the following structure:
+
+    {
+        "task_data": {
+            "task_name": "string reverse",
+            "task_parameters": {
+                "given string": "<Text to be reversed>"
+            },
+            "request_type": "post"
+        },
+        "return_data": {
+            "return_value": "<the reversed text>",
+            "status_code": 200,
+            "validate_resp_val": true
+        },
+        "api_path": "/api/task/reverse"
+    }
+
+🧩 Required Structure
+The JSON file must include three main keys:
+
+"task_data" — describes the request to send
+
+"return_data" — describes the expected response
+
+"api_path" — the endpoint to target
+
+Each section must include the following subkeys:
+
+✅ task_data must contain:
+task_name (mandatory)
+
+task_parameters (can be null or an empty object, but key must exist)
+
+request_type (mandatory)
+
+✅ return_data must contain:
+return_value (can be null or an empty string, but key must exist)
+
+status_code (mandatory)
+
+validate_resp_val (mandatory)
+
+✅ api_path:
+Must be a valid endpoint string (mandatory)
+
+❗ Negative Test Examples
+
+You can review intentionally misconfigured cases under:
+tests/cfg/cfg_parameterized_tests/
+
+These negative tests demonstrate what happens when required keys are missing or malformed — they are designed to fail and validate error handling in the API.
+
+
+⚙️ Performance Testing 
+Performance tests are not yet implemented.
+
+A performance test type could simulate a group of users sending simultaneous GET and POST requests to the FastAPI application.
+
+🔧 Conceptual behavior:
+Launch multiple threads or asynchronous workers to hit /reverse and /restore endpoints concurrently.
+
+Measure:
+
+Response times
+
+Server throughput
+
+Error rates under load
+
+This can help evaluate the app’s behavior under high demand and ensure it remains responsive and stable.
+
+
