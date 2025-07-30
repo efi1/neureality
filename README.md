@@ -1,6 +1,6 @@
-🐳 Python HTTP App with Docker + Pytest
+## 🐳 Python HTTP App with Docker + Pytest
 
-This project includes:
+<br>This project includes:
 
 A Python-based HTTP application running in a Docker container
 
@@ -16,7 +16,7 @@ Outputs test results in JUnit format
 
 Supports easy extension with more tests
 
-## 📁 Project Structure
+<br> 📁 Project Structure
 
     .
     ├── app/
@@ -45,3 +45,76 @@ Supports easy extension with more tests
     ├── Dockerfile                           # Builds and runs the FastAPI app in a container
 
 
+<br>🚀 Application
+
+A Docker container running a Python HTTP application built with FastAPI.
+
+A pre-built Docker image is available and automatically pulled from DockerHub when tests are executed.
+
+The image is built using a Dockerfile located at the project root.
+
+The application source code used in the image is located under the /app directory.
+
+The application exposes the following four RESTful APIs:
+
+(You can view and test them interactively at: http://localhost:8000/docs)
+
+
+✅ POST /reverse
+
+Request JSON format:
+
+{ 
+"task_name": "string reverse", 
+"task_parameters": { "given string": "The quick brown fox jumps over the lazy dog" 
+}
+
+Response: 
+{
+    "result": "dog lazy the over jumps fox brown quick The"
+}
+
+✅ GET /restore
+
+Returns the last result produced by the /reverse endpoint.
+
+Response:
+{
+    "result": "dog lazy the over jumps fox brown quick The"
+}
+
+✅ GET /
+
+Takes no parameters and returns a welcome message.
+
+Response:
+{
+    "result": "Welcome to reverse and restore handler"
+}
+
+✅ GET /health
+
+Used to verify that the Docker container is running and healthy after deployment.
+
+Response:
+{
+    "status": "ok"
+}
+
+
+### 🐳 Running the Docker App
+
+Running the Docker container is handled automatically before tests begin.
+
+This is managed inside the `conftest.py` file using a `pytest` fixture named `app_container`.
+
+The fixture:
+
+- Starts the FastAPI application in a Docker container using the provided image.
+- Calls the helper function `is_container_healthy`, which waits for a defined period of time.
+- Validates the container health by hitting the `/health` endpoint.
+
+If the container becomes healthy within the timeout window, the tests will proceed.  
+If not, the test run will fail early, ensuring the created container is removed.
+
+When the tests end, the container is stopped and removed.
