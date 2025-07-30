@@ -231,14 +231,15 @@ The JSON file must include three main keys:
 
 Each section must include the following subkeys:
 
-✅ task_data must contain:
-- task_name (mandatory)
+✅ task_data contains these fields:
 
+- task_name – required in actual requests (missing → 422 Unprocessable Entity), but optional in tests where it may be omitted or set to null/empty.
 - task_parameters (can be null or an empty object, but key must exist)
 
 - request_type (mandatory)
 
 ✅ return_data must contain:
+
 - return_value (can be null or an empty string, but key must exist)
 
 - status_code (mandatory)
@@ -246,6 +247,7 @@ Each section must include the following subkeys:
 - validate_resp_val (mandatory)
 
 ✅ api_path:
+
 Must be a valid endpoint string (mandatory)
 
 #### Negative Test Examples
