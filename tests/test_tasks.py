@@ -21,7 +21,8 @@ def shared_test_logic(cfg_data: FullRequest) -> Tuple[Response, ReturnData]:
     return response, expected_data
 
 
-@pytest.mark.parametrize('test_name', [resource.name for resource in files(settings.parameterized_tests_dir).iterdir()])
+@pytest.mark.parametrize('test_name', [resource.name
+                                        for resource in files(settings.parameterized_tests_dir).iterdir()])
 def test_perform_tasks(app_container: object, test_name: str) -> None:
     """
     Testing various task using the files in app.cfg.cfg_parameterized_tests as an input (parameterized test)
