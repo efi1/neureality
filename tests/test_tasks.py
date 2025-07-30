@@ -78,3 +78,19 @@ def test_negative_404_missing_string_input(app_container: object, load_test_data
     if expected_data.validate_resp_val:
         assert res_json.get('result') == expected_data.return_value, (F"\nwrong response val: {res_json.get('result')}\n"
                                                                  F"expected: {expected_data.return_value}\n")
+
+
+def test_negative_405_wrong_request_method(app_container: object, load_test_data: FullRequest) -> None:
+    """  A GET request sent to an API path that expects POST """
+    resp: Tuple[Response, ReturnData] = shared_test_logic(load_test_data)
+    response, expected_data = resp
+    res_json = response.json()
+    logger.info(F"response from api-client: {resp}")
+    # Check that the API response is as expected
+    assert response.status_code == expected_data.status_code, \
+        (F"\nExpected status code: {expected_data.status_code}\nactual: {response.status_code}, "
+         F"Error msg: {res_json.get('detail')[0].get('msg') if not res_json.get('result') else res_json.get('result')}.\n")
+    # Check that the API response's content is as expected
+    if expected_data.validate_resp_val:
+        assert res_json.get('result') == expected_data.return_value, (F"\nwrong response val: {res_json.get('result')}\n"
+                                                                 F"expected: {expected_data.return_value}\n")
