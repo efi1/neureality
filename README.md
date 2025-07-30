@@ -118,3 +118,33 @@ If the container becomes healthy within the timeout window, the tests will proce
 If not, the test run will fail early, ensuring the created container is removed.
 
 When the tests end, the container is stopped and removed.
+
+### 🧪 Tests Structure
+There are two types of tests supported:
+
+- Parameterized tests
+
+- Non-parameterized tests (also called unparameterized tests)
+
+<br>📂 Test Data Location
+
+Test data is stored under the tests/cfg folder, which contains three subfolders:
+
+__cfg_global/__
+Contains global settings (__settings.py__) and configuration files, including:
+
+Docker image name
+
+Base URL where the app is running
+
+External port the container exposes
+
+Paths to parameterized and non-parameterized test data files
+
+__cfg_parameterized_tests/__
+Contains data files for parameterized test cases.
+
+__cfg_non_parameterized_tests/__
+Contains data files for non-parameterized (single run) test cases.
+
+
