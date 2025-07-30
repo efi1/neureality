@@ -339,6 +339,11 @@ Test execution logs are generated automatically and saved to the ./logs/ directo
 
       python -m pip install . (include the dot at the end) — see elaboration below.
 
+  * to uninstall it:
+
+
+        python -m pip uninstall NeuRealityProject
+
 
 ### The setup.py file 
 
