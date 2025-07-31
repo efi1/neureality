@@ -73,9 +73,9 @@ def share_get_data_logic(cfg_dir: str, test_name: str) -> FullRequest | PartialR
     cfg_file: Path | Traversable = files(cfg_dir).joinpath(test_name)
     if cfg_file.exists():
         json_params = read_json_file(cfg_file)
-        data = FullRequest(**json_params)
+        data = FullRequest(**json_params) # validating test data and instantiating an object that encapsulates it
         if data.exclude_fields:
-            data = data.get_partial_req(data.exclude_fields)
+            data = data.get_partial_req(data.exclude_fields) # exclude required fields from the data
         return data
     raise ValueError(f'Test {test_name} has no data – please check the test input file')
 
