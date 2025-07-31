@@ -218,37 +218,42 @@ Each test case is defined in a JSON file with the following structure:
             "validate_resp_val": true
         },
         "api_path": "/api/task/reverse"
+        "exclude_fields": {"task_data": ["task_name"]} # This field is optional and is used to simulate partial or redacted inputs.
     }
 
 ### Required Structure
-The JSON file must include three main keys:
+The JSON file must include the following keys:
 
-- "task_data" — describes the request to send
+task_data – Describes the request payload to be sent.
 
-- "return_data" — describes the expected response
+return_data – Defines the expected response from the API.
 
-- "api_path" — the endpoint to target
+api_path – Specifies the target endpoint for the request.
 
-Each section must include the following subkeys:
+exclude_fields (optional) – Defines nested fields to be omitted during test execution. 
+This enables running tests with intentionally incomplete data to simulate partial or redacted inputs 
+(for example, testing how missing fields result in a 422 Unprocessable Entity response).
+
+Each section must include the following subkeys by default.
+However, any of them can be intentionally omitted by specifying them under the optional exclude_fields key in the JSON file.
 
 ✅ task_data contains these fields:
 
-- task_name – required in actual requests (missing → 422 Unprocessable Entity), but optional in tests where it may be omitted or set to null/empty.
-- task_parameters (can be null or an empty object, but key must exist)
-
+- task_name (mandatory)
+- task_parameters (optional)
 - request_type (mandatory)
 
 ✅ return_data must contain:
 
-- return_value (can be null or an empty string, but key must exist)
-
+- return_value (can be null or an empty string)
 - status_code (mandatory)
-
 - validate_resp_val (mandatory)
 
 ✅ api_path:
-
 Must be a valid endpoint string (mandatory)
+
+✅ exclude_fields:
+This field is optional and is used to simulate partial or redacted inputs. It's helpful for testing cases such as missing fields that should trigger a 422 Unprocessable Entity response.
 
 #### Negative Test Examples
 
