@@ -5,7 +5,7 @@ from requests import Response
 from tests.cfg.cfg_global import settings
 from importlib.resources import files
 from conftest import get_param_data, logger
-from tests.utils.data_to_obj import FullRequest, ReturnData
+from tests.utils.data_to_obj import FullRequest, PartialRequest, ReturnData
 
 
 def shared_test_logic(cfg_data: FullRequest) -> Tuple[Response, ReturnData]:
@@ -44,7 +44,7 @@ def test_perform_tasks(app_container: object, test_name: str) -> None:
                                                                  F"expected: {expected_data.return_value}\n")
 
 
-def test_negative_422_missing_required_field(app_container: object, load_test_data: FullRequest) -> None:
+def test_negative_422_missing_required_field(app_container: object, load_test_data: PartialRequest) -> None:
     """
     A POST request with the task_name required field missing from the request body - http 422 Unprocessable Entity
     :param app_container: the docker container in which the app resides in
