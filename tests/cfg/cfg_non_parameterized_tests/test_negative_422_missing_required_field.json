@@ -1,5 +1,6 @@
 {
     "task_data": {
+        "task_name": "get reverse string",
         "task_parameters": {"given string": "The quick brown fox jumps over the lazy dog"},
         "request_type": "post"
     },
@@ -9,5 +10,5 @@
 		"validate_resp_val": true
     },
     "api_path": "/api/task/reverse",
-    "partial_request": true
+    "exclude_fields": {"task_data": ["task_name"]}
 }
