@@ -230,12 +230,10 @@ return_data – Defines the expected response from the API.
 
 api_path – Specifies the target endpoint for the request.
 
-exclude_fields (optional) – Defines nested fields to be omitted during test execution. 
-This enables running tests with intentionally incomplete data to simulate partial or redacted inputs 
-(for example, testing how missing fields result in a 422 Unprocessable Entity response).
-
 Each section must include the following subkeys by default.
-However, any of them can be intentionally omitted by specifying them under the optional exclude_fields key in the JSON file.
+However, any of them can be intentionally omitted from the JSON file.
+This enables running tests with intentionally incomplete data to simulate partial or redacted inputs.
+(for example, testing how missing fields result in a 422 Unprocessable Entity response).
 
 ✅ task_data contains these fields:
 
