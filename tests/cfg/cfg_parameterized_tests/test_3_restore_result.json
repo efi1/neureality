@@ -9,5 +9,5 @@
         "status_code": 200,
 		"validate_resp_val": true
     },
-    "api_path": "/api/task/restore"
+    "api_path": "{{base_url}}/api/task/restore"
 }

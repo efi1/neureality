@@ -8,6 +8,5 @@
         "status_code": 200,
 		"validate_resp_val": true
     },
-    "api_path": "/api/task/reverse",
-    "exclude_fields": {"task_data": ["task_name"]}
+    "api_path": "{{base_url}}/api/task/reverse"
 }

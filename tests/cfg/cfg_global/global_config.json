@@ -1,0 +1,13 @@
+{
+  "parameterized_tests_dir": "tests.cfg.cfg_parameterized_tests",
+  "non_parameterized_tests_dir": "tests.cfg.cfg_non_parameterized_tests",
+  "image_name": "efiradware/reverse-restore-app:latest",
+  "remark external_port": "the default port which FastAPI app (Uvicorn) runs inside the container",
+  "external_port": 8000,
+  "base_url": "http://localhost:8000",
+  "ports": {"8000/tcp": 8000},
+  "success_resp": 200,
+  "container_timeout": 10,
+  "sleep_time": 1,
+  "excluded_keywords": "health"
+}
