@@ -25,7 +25,7 @@ Supports easy extension with more tests
     │   └── clients/
     │       └── fastap/
     │           ├── routes/
-    │           │   └── schemas.py           # Schema definitions for API routes
+    │           │   └── tasks.py             # Schema definitions for API routes
     │           ├── schemas.py               # Shared schemas
     │           └── tasks_base.py            # Contains: app = FastAPI()
     │
