@@ -8,7 +8,7 @@ from importlib.abc import Traversable
 from _pytest.fixtures import fixture
 from importlib.resources import files
 from tests.cfg.cfg_global import settings
-from tests.utils.data_to_obj import FullRequest, PartialRequest
+from tests.utils.data_to_obj import ObjectLikeData, data_object
 from tests.utils.collect_container_logs import collect_container_logs
 
 
@@ -69,19 +69,16 @@ def read_json_file(path: Path) -> dict:
     return data
 
 
-def share_get_data_logic(cfg_dir: str, test_name: str) -> FullRequest | PartialRequest  | None:
+def share_get_data_logic(cfg_dir: str, test_name: str) -> ObjectLikeData:
     cfg_file: Path | Traversable = files(cfg_dir).joinpath(test_name)
     if cfg_file.exists():
         json_params = read_json_file(cfg_file)
-        data = FullRequest(**json_params) # validating test data and instantiating an object that encapsulates it
-        if data.exclude_fields:
-            data = data.get_partial_req(data.exclude_fields) # exclude required fields from the data
-        return data
+        return data_object(json_params) # create an object with the test data
     raise ValueError(f'Test {test_name} has no data – please check the test input file')
 
 
 @fixture(scope="function")
-def load_test_data(request) -> FullRequest | PartialRequest | None:
+def load_test_data(request) -> ObjectLikeData:
     """
     Rendering config data out of a template cfg file - for non parameterized test
     :return: tests data as a class object
@@ -92,7 +89,7 @@ def load_test_data(request) -> FullRequest | PartialRequest | None:
     return share_get_data_logic(cfg_dir, f'{test_name}.json')
 
 
-def get_param_data(test_name: str) -> FullRequest | None:
+def get_param_data(test_name: str) -> ObjectLikeData:
     """
     Rendering config data out of a template cfg file - for parameterized test
     :param test_name: name as given by test when it is being executed

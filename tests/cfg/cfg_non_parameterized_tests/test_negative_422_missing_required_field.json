@@ -1,6 +1,5 @@
 {
     "task_data": {
-        "task_name": "get reverse string",
         "task_parameters": {"given string": "The quick brown fox jumps over the lazy dog"},
         "request_type": "post"
     },
