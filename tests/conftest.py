@@ -60,16 +60,14 @@ def app_container():
 
 
 def read_json_file(path: Path) -> dict:
-    """
-    Read from cfg_test file and get the test's parameters
-    :return:  test's parameters
-    """
+    """  Read from json file """
     with open(path) as file:
         data = json.loads(file.read())
     return data
 
 
 def share_get_data_logic(cfg_dir: str, test_name: str) -> ObjectLikeData:
+    """shared logic in reading the cfg test data and convert it to a class data object  """
     cfg_file: Path | Traversable = files(cfg_dir).joinpath(test_name)
     if cfg_file.exists():
         json_params = read_json_file(cfg_file)
