@@ -1,7 +1,5 @@
 import subprocess
 
-from tests.cfg.cfg_global import settings
-
 
 def get_filtered_container_logs(container_name, exclude_keywords=None, lines=200):
     if exclude_keywords is None:
@@ -24,14 +22,10 @@ def get_filtered_container_logs(container_name, exclude_keywords=None, lines=200
         return f"Error getting logs: {e.output.decode()}"
 
 
-def collect_container_logs(app_container: object, logger: object, exclude_keywords: None = None) -> None:
-    if exclude_keywords is None:
-        exclude_keywords = settings.excluded_keywords
-
+def collect_container_logs(app_container: object, logger: object, exclude_keywords: list[str]) -> None:
     exclude_keywords = (
         exclude_keywords if isinstance(exclude_keywords, list) else [exclude_keywords]
     )
-
     container_name = app_container.name
     logs = get_filtered_container_logs(container_name, exclude_keywords=exclude_keywords)
     logger.info(f'==== FastAPI container logs ====\n{logs}')

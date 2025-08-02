@@ -132,7 +132,7 @@ There are two types of tests supported:
 Test data is stored under the tests/cfg folder, which contains three subfolders:
 
 __cfg_global/__
-Contains global settings (__settings.py__) and configuration files, including:
+Contains global settings (__global_config.json__) and configuration files, including:
 
 Docker image name
 
@@ -168,11 +168,10 @@ app_container: the running Docker container (provided via a fixture).
 
 test_name: the name of the test case (taken from the JSON filename).
 
+In conftest.py, the pytest_generate_tests hook dynamically generates a separate test run for each file in 
+a specified directory (tests/cfg/cfg_parameterized_tests/).
+This applies to any test function that uses the test_name fixture.
 
-        @pytest.mark.parametrize('test_name', [
-            resource.name
-            for resource in files(settings.parameterized_tests_dir).iterdir()
-        ])
         def test_perform_tasks(app_container: object, test_name: str) -> None:
             ...
 

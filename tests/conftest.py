@@ -1,4 +1,5 @@
 """Shared fixtures."""
+import ast
 import time
 import logging
 import json
@@ -36,24 +37,24 @@ def is_container_healthy(container: object, timeout_seconds: int, interval: int 
 
 
 @fixture(scope="session")
-def app_container():
+def app_container(global_data_object):
     client = docker.from_env()
 
     # start the container with auto_remove - delete the container after it stops
     container = client.containers.run(
-        settings.image_name,
-        ports=settings.ports,
+        global_data_object.image_name,
+        ports=ast.literal_eval(global_data_object.ports),
         detach=True,
         auto_remove=True
     )
 
     try:
-        if not is_container_healthy(container, settings.container_timeout, settings.sleep_time):
-            raise RuntimeError(F"App container did not become available after {settings.container_timeout} sec.")
+        if not is_container_healthy(container, global_data_object.container_timeout, global_data_object.sleep_time):
+            raise RuntimeError(F"App container did not become available after {global_data_object.container_timeout} sec.")
 
         yield container
 
-        collect_container_logs(container, logger)
+        collect_container_logs(container, logger, global_data_object.excluded_keywords)
 
     finally: # cleanup - stop the container at the end of tests, remove is done automatically (auto_remove)
 
@@ -66,56 +67,20 @@ def app_container():
 
 
 def read_json_file(path: Path) -> dict:
-    """
-    Read from cfg_test file and get the test's parameters
-    :return:  test's parameters
-    """
+    """  Read from json file """
     with open(path) as file:
         data = json.loads(file.read())
     return data
 
 
-def share_get_data_logic(test_name: str, global_dict_data: dict) -> ObjectLikeData:
-    is_file_exist = is_cfg_file(test_name, CFG_TEST_DIR)
-    if not is_file_exist:
-        logger.info(f'Test {test_name} has no data, executing test with no data file')
-        return None
-    test_template = get_cfg_template(test_name, CFG_TEST_DIR)
-    cfg_data = test_template.render(global_dict_data)
-    dict_data = json.loads(cfg_data)
-    return data_object(dict_data)
-
-
-def get_param_data(test_name: str, global_dict_data: dict) -> ObjectLikeData:
-    """
-    Rendering config data out of a template cfg file - for parameterized test
-    :param global_dict_data: global data
-    :param test_name: name as given by test when it is being executed
-    :return: tests data as a class object
-    """
-    logging.info(F"load cfg_data for {test_name}")
-    return share_get_data_logic(test_name, global_dict_data)
-
-
-def get_cfg_template(test_name, cfg_test_dir: List[Path | Traversable]):
-    template_loader = FileSystemLoader(searchpath=cfg_test_dir)
-    template_env = Environment(loader=template_loader)
-    template = template_env.get_template(f'{test_name}.json')
-    return template
-
-
-def is_cfg_file(test_name, cfg_test_dir) -> bool:
-    cfg_test_name = F'{test_name}.json'
-    for path in cfg_test_dir:
-        cfg_test_path = path.joinpath(cfg_test_name)
-        if cfg_test_path.exists():
-            return True
-    return False
-
-
 @fixture(scope="session")
 def global_dict_data(file=GLOBAL_CFG_FILE):
     return read_json_file(file)
+
+@fixture(scope="session")
+def global_data_object(global_dict_data) -> ObjectLikeData:
+    """ Map dictionary keys and values to class attributes"""
+    return data_object(global_dict_data)
 
 
 @fixture(scope="function")
@@ -130,11 +95,63 @@ def load_test_data(request, global_dict_data: dict) -> ObjectLikeData:
     return share_get_data_logic(test_name, global_dict_data)
 
 
+def get_cfg_template(test_name, cfg_test_dir: List[Path]):
+    """get a template which required """
+    template_loader = FileSystemLoader(searchpath=cfg_test_dir)
+    template_env = Environment(loader=template_loader)
+    template = template_env.get_template(f'{test_name}.json')
+    return template
+
+
+def is_cfg_file(test_name, cfg_test_dir) -> bool:
+    """ check if file exist in the cfg folders"""
+    cfg_test_name = F'{test_name}.json'
+    for path in cfg_test_dir:
+        cfg_test_path = path.joinpath(cfg_test_name)
+        if cfg_test_path.exists():
+            return True
+    return False
+
+def share_get_data_logic(test_name: str, global_dict_data: dict) -> ObjectLikeData:
+    """shared logic in rendering the cfg test data """
+    is_file_exist = is_cfg_file(test_name, CFG_TEST_DIR)
+    if not is_file_exist:
+        logger.info(f'Test {test_name} has no data, executing test with no data file')
+        return None
+    # create a template which required for rendering out of the cfg test file
+    test_template = get_cfg_template(test_name, CFG_TEST_DIR)
+    # render the template together with the global data file
+    cfg_test_rendered_data = test_template.render(global_dict_data)
+    # convert the rendered data to a dict in order to convert it to a class object
+    dict_test_rendered_data = json.loads(cfg_test_rendered_data)
+    return data_object(dict_test_rendered_data)
+
+
+def get_param_data(test_name: str, global_dict_data: dict) -> ObjectLikeData:
+    """
+    Rendering config data out of a template cfg file - for parameterized test
+    :param global_dict_data: global data of dict structure
+    :param test_name: name as given by test when it is being executed
+    :return: test data as a class object
+    """
+    logging.info(F"load cfg_data for {test_name}")
+    return share_get_data_logic(test_name, global_dict_data)
+
+
 def pytest_generate_tests(metafunc):
+
+    """dynamically creates a separate test run for each file in a specified
+    directory for test functions that use the test_name fixture"""
+
+    # Check if the test function uses the 'test_name' fixture
     if 'test_name' in metafunc.fixturenames:
+        # Load configuration from a global JSON file
         file_path = GLOBAL_CFG_FILE
         config = read_json_file(file_path)
+        # Access the directory where parameterized test files are located
         param_dir = files(config['parameterized_tests_dir'])
+        # Collect all file names (without extensions) in that directory
         test_names = [p.name.split('.')[0] for p in param_dir.iterdir() if p.is_file()]
+        # Dynamically parameterize 'test_name' for the test function
         metafunc.parametrize('test_name', test_names)
 
