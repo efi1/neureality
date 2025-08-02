@@ -116,8 +116,7 @@ def share_get_data_logic(test_name: str, global_dict_data: dict) -> ObjectLikeDa
     """shared logic in rendering the cfg test data """
     is_file_exist = is_cfg_file(test_name, CFG_TEST_DIR)
     if not is_file_exist:
-        logger.info(f'Test {test_name} has no data, executing test with no data file')
-        return None
+        raise ValueError(f'Test {test_name} has no data, executing test with no data file')
     # create a template which required for rendering out of the cfg test file
     test_template = get_cfg_template(test_name, CFG_TEST_DIR)
     # render the template together with the global data file
