@@ -1,10 +1,13 @@
+# import uvicorn # - for debugging purposes only.
 import sys
 import time
 import logging
 from pathlib import Path
-from fastapi import FastAPI, Request
-from starlette.responses import JSONResponse
 sys.path.append(str(Path(__file__).resolve().parents[3]))
+from fastapi import FastAPI, Request
+from fastapi.exceptions import RequestValidationError
+from starlette import status
+from starlette.responses import JSONResponse
 from app.clients.fastapi.routers import tasks
 from starlette.exceptions import HTTPException as StarletteHTTPException
 
@@ -34,3 +37,26 @@ async def http_exception_handler(request: Request, exc):
         status_code=exc.status_code,
         content={"result": F"Bad request, request:{request.url}, Error: {exc.detail}"})
 
+
+@app.exception_handler(RequestValidationError)
+async def validation_exception_handler(request: Request, exc: RequestValidationError):
+    # safely extract from exc.args
+    error_list = exc.args[0] if exc.args else []
+
+    # find missing fields
+    missing_fields = [
+        error["loc"][-1] for error in error_list
+        if error.get("type") == "missing"
+    ]
+    return JSONResponse(
+        status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
+        content={
+            "result": F"Required field is missing: {missing_fields}, Error: {exc.errors()}"  # or customize further if needed
+        }
+    )
+
+
+
+# if __name__ == '__main__':
+#     if __name__ == '__main__':
+#         uvicorn.run("tasks_base:app", reload=True)

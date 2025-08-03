@@ -71,9 +71,12 @@ def test_negative_404_missing_string_input(app_container: object, load_test_data
     res_json = response.json()
     logger.info(F"response from api-client: {resp}")
     # Check that the API response is as expected
+    # assert response.status_code == expected_data.status_code, \
+    #     (F"\nExpected status code: {expected_data.status_code}\nactual: {response.status_code}, "
+    #      F"Error msg: {res_json.get('detail')[0].get('msg') if not res_json.get('result') else res_json.get('result')}.\n")
     assert response.status_code == expected_data.status_code, \
         (F"\nExpected status code: {expected_data.status_code}\nactual: {response.status_code}, "
-         F"Error msg: {res_json.get('detail')[0].get('msg') if not res_json.get('result') else res_json.get('result')}.\n")
+         F"Error msg: {res_json.get('result')}.\n")
     # Check that the API response's content is as expected
     if expected_data.validate_resp_val:
         assert res_json.get('result') == expected_data.return_value, (F"\nwrong response val: {res_json.get('result')}\n"
