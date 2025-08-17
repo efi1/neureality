@@ -39,6 +39,7 @@ def test_perform_tasks(app_container: object, test_name: str, global_dict_data: 
                                                                  F"expected: {expected_data.return_value}\n")
 
 
+@pytest.mark.slow
 def test_negative_422_missing_required_field(app_container: object, load_test_data: ObjectLikeData) -> None:
     """
     A POST request with the task_name required field missing from the request body - http 422 Unprocessable Entity
@@ -59,6 +60,7 @@ def test_negative_422_missing_required_field(app_container: object, load_test_da
                                                                  F"expected: {expected_data.return_value}\n")
 
 
+@pytest.mark.slow
 def test_negative_404_missing_string_input(app_container: object, load_test_data: ObjectLikeData) -> None:
     """  A POST request with the given string value missing from the request body - http 404 Not Found """
     resp: Tuple[Response, ObjectLikeData] = shared_test_logic(load_test_data)
@@ -75,6 +77,7 @@ def test_negative_404_missing_string_input(app_container: object, load_test_data
                                                                  F"expected: {expected_data.return_value}\n")
 
 
+@pytest.mark.slow
 def test_negative_405_wrong_request_method(app_container: object, load_test_data: ObjectLikeData) -> None:
     """  A GET request sent to an API path that expects POST """
     resp: Tuple[Response, ObjectLikeData] = shared_test_logic(load_test_data)
