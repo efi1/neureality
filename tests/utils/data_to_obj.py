@@ -1,8 +1,10 @@
 from types import SimpleNamespace
 from typing import Any, Union
 
-ObjectLikeData = Union[list[SimpleNamespace | list[
-    Any] | str | int | float | bool | None] | SimpleNamespace | dict:]
+ObjectLikeData = Union[
+    SimpleNamespace,
+    dict,
+    list[Union[SimpleNamespace, dict, str, int, float, bool, None, "ObjectLikeData"]],]
 
 def data_object(d: dict) -> ObjectLikeData:
     """Recursively converts a nested dictionary or list into a SimpleNamespace-based object."""
