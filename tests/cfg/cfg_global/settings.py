@@ -8,3 +8,4 @@ success_resp = 200
 container_timeout = 10
 sleep_time = 1
 excluded_keywords = 'health'
+fastapi_api_name = 'fastapi_api'

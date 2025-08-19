@@ -2,11 +2,14 @@
 import time
 import logging
 import json
+import pytest
 import docker
+import docker.errors
 from pathlib import Path
 from importlib.abc import Traversable
 from _pytest.fixtures import fixture
 from importlib.resources import files
+from tests.utils import get_docker_network
 from tests.cfg.cfg_global import settings
 from tests.utils.data_to_obj import ObjectLikeData, data_object
 from tests.utils.collect_container_logs import collect_container_logs
@@ -29,16 +32,28 @@ def is_container_healthy(container: object, timeout_seconds: int, interval: int 
     return False
 
 
+def get_docker_client():
+    try:
+        client = docker.from_env()
+        return client
+    except (docker.errors.DockerException, OSError) as e:
+        pytest.skip(f"Skipping tests because Docker is not available: {e}")
+
+
 @fixture(scope="session")
 def app_container():
-    client = docker.from_env()
+
+    client = get_docker_client()
+    app_net_name = get_docker_network.get_effective_network(client)
 
     # start the container with auto_remove - delete the container after it stops
     container = client.containers.run(
         settings.image_name,
         ports=settings.ports,
         detach=True,
-        auto_remove=True
+        auto_remove=True,
+        network=app_net_name,
+        name=settings.fastapi_api_name
     )
 
     try:

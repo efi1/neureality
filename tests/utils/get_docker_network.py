@@ -1,0 +1,51 @@
+import os
+import docker
+import docker.errors
+
+
+def is_running_in_container():
+    """Detect if we are inside a container (docker/containerd)."""
+    try:
+        with open("/proc/1/cgroup", "rt") as f:
+            content = f.read()
+            return "docker" in content or "containerd" in content
+    except OSError:
+        return False
+
+
+def get_self_container_id():
+    """Return current container ID (short)."""
+    return os.environ.get("HOSTNAME")
+
+
+def get_self_network(docker_client):
+    """If running in container, return its first network."""
+    self_id = get_self_container_id()
+    if not self_id:
+        return None
+
+    try:
+        container = docker_client.containers.get(self_id)  # works with short ID
+        networks = container.attrs["NetworkSettings"]["Networks"]
+        return list(networks.keys())[0] if networks else None
+    except docker.errors.NotFound:
+        return None
+
+
+def get_host_network(docker_client):
+    """If running on host, return default bridge network."""
+    try:
+        bridge = docker_client.networks.get("bridge")
+        return bridge.name
+    except docker.errors.NotFound:
+        return None
+
+
+def get_effective_network(docker_client):
+    """Return network name depending on environment."""
+    if is_running_in_container():
+        net = get_self_network(docker_client)
+        if net:
+            return net
+    return get_host_network(docker_client)
+
