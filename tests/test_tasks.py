@@ -13,7 +13,7 @@ def shared_test_logic(cfg_data: ObjectLikeData) -> Tuple[Response, ObjectLikeDat
     req_type = task_data.request_type # GET or POST request
     expected_data = cfg_data.return_data # expected response of the request
     api_path = cfg_data.api_path
-    uri = f'{settings.base_url}{api_path}'
+    uri = f'{cfg_data.base_url}{api_path}'
     log_msg = f'calling get {uri}' if req_type == 'get' else f'calling post {uri}, data: {object_dump(task_data)}'
     logger.info(F"api-client request: {log_msg}")
     # execute the api call
@@ -71,9 +71,6 @@ def test_negative_404_missing_string_input(app_container: object, load_test_data
     res_json = response.json()
     logger.info(F"response from api-client: {resp}")
     # Check that the API response is as expected
-    # assert response.status_code == expected_data.status_code, \
-    #     (F"\nExpected status code: {expected_data.status_code}\nactual: {response.status_code}, "
-    #      F"Error msg: {res_json.get('detail')[0].get('msg') if not res_json.get('result') else res_json.get('result')}.\n")
     assert response.status_code == expected_data.status_code, \
         (F"\nExpected status code: {expected_data.status_code}\nactual: {response.status_code}, "
          F"Error msg: {res_json.get('result')}.\n")

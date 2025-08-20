@@ -4,13 +4,24 @@ import docker.errors
 
 
 def is_running_in_container():
-    """Detect if we are inside a container (docker/containerd)."""
+    """
+    Detect if running inside a Docker (or containerized) environment.
+    Returns True if inside a container, False otherwise.
+    """
+    # Check for the /.dockerenv file
+    if os.path.exists("/.dockerenv"):
+        return True
+
+    # Check /proc/1/cgroup for docker/kubepods indicators
     try:
         with open("/proc/1/cgroup", "rt") as f:
-            content = f.read()
-            return "docker" in content or "containerd" in content
-    except OSError:
-        return False
+            for line in f:
+                if "docker" in line or "kubepods" in line:
+                    return True
+    except FileNotFoundError:
+        pass
+
+    return False
 
 
 def get_self_container_id():

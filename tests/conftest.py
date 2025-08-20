@@ -53,7 +53,7 @@ def app_container():
         detach=True,
         auto_remove=True,
         network=app_net_name,
-        name=settings.fastapi_api_name
+        name=settings.container_name
     )
 
     try:
@@ -73,6 +73,10 @@ def app_container():
         except Exception as e:
             logger.info("Container already stopped or removed:", e)
 
+def get_base_url():
+    return settings.base_url.format(host = settings.container_name) if get_docker_network.is_running_in_container() \
+        else settings.base_url.format(host = settings.host)
+
 
 def read_json_file(path: Path) -> dict:
     """  Read from json file """
@@ -86,6 +90,8 @@ def share_get_data_logic(cfg_dir: str, test_name: str) -> ObjectLikeData:
     cfg_file: Path | Traversable = files(cfg_dir).joinpath(test_name)
     if cfg_file.exists():
         json_params = read_json_file(cfg_file)
+        base_url = get_base_url()
+        json_params['base_url'] = base_url
         return data_object(json_params) # create an object with the test data
     raise ValueError(f'Test {test_name} has no data – please check the test input file')
 
