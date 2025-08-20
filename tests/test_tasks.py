@@ -1,4 +1,4 @@
-import json
+import re
 from typing import Tuple
 import pytest
 import requests
@@ -22,27 +22,40 @@ def shared_test_logic(cfg_data: ObjectLikeData) -> Tuple[Response, ObjectLikeDat
     return response, expected_data
 
 
-@pytest.mark.parametrize('test_name', [resource.name
-                                        for resource in files(settings.parameterized_tests_dir).iterdir()])
-def test_perform_tasks(app_container: object, test_name: str) -> None:
-    """
-    Testing various task using the files in app.cfg.cfg_parameterized_tests as an input (parameterized test)
-    :param app_container: the docker container in which the app resides in
-    :param test_name: test name as taken from the file names resides in tests.cfg.cfg_parameterized_tests folder
-    :return: no return - assertion is made on the api response
-    """
-    cfg_data: data_object = get_param_data(test_name=test_name) # get the test data
-    resp: Tuple[Response, ObjectLikeData] = shared_test_logic(cfg_data)
-    response, expected_data = resp
-    res_json = response.json()
-    logger.info(F"response from api-client: {resp}")
-    # Check that the API response is as expected
-    assert response.status_code == expected_data.status_code, \
-        F"\nExpected status code: {expected_data.status_code}\nactual: {response.status_code}, {res_json.get('result')}.\n"
-    # Check that the API response's content is as expected
-    if expected_data.validate_resp_val:
-        assert res_json.get('result') == expected_data.return_value, (F"\nwrong response val: {res_json.get('result')}\n"
-                                                                 F"expected: {expected_data.return_value}\n")
+def extract_number(filename):
+    match = re.search(r'test_(\d+)', filename)
+    return int(match.group(1)) if match else float('inf')
+
+sorted_files = sorted(
+    [resource.name for resource in files(settings.parameterized_tests_dir).iterdir()],
+    key=extract_number)
+
+
+# @pytest.mark.parametrize('test_name', sorted([resource.name
+#                                         for resource in files(settings.parameterized_tests_dir).iterdir()]))
+
+@pytest.mark.parametrize('test_name', sorted_files, scope="class")
+
+class TestParameterized:
+    def test_perform_tasks(self, app_container: object, test_name: str) -> None:
+        """
+        Testing various task using the files in app.cfg.cfg_parameterized_tests as an input (parameterized test)
+        :param app_container: the docker container in which the app resides in
+        :param test_name: test name as taken from the file names resides in tests.cfg.cfg_parameterized_tests folder
+        :return: no return - assertion is made on the api response
+        """
+        cfg_data: data_object = get_param_data(test_name=test_name) # get the test data
+        resp: Tuple[Response, ObjectLikeData] = shared_test_logic(cfg_data)
+        response, expected_data = resp
+        res_json = response.json()
+        logger.info(F"response from api-client: {resp}")
+        # Check that the API response is as expected
+        assert response.status_code == expected_data.status_code, \
+            F"\nExpected status code: {expected_data.status_code}\nactual: {response.status_code}, {res_json.get('result')}.\n"
+        # Check that the API response's content is as expected
+        if expected_data.validate_resp_val:
+            assert res_json.get('result') == expected_data.return_value, (F"\nwrong response val: {res_json.get('result')}\n"
+                                                                     F"expected: {expected_data.return_value}\n")
 
 
 def test_negative_422_missing_required_field(app_container: object, load_test_data: ObjectLikeData) -> None:
