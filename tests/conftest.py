@@ -1,4 +1,5 @@
 """Shared fixtures."""
+import re
 import time
 import logging
 import json
@@ -117,3 +118,13 @@ def get_param_data(test_name: str) -> ObjectLikeData:
     logging.info(F"load cfg_data for {test_name.split('.')[0]}")
     cfg_dir = settings.parameterized_tests_dir
     return share_get_data_logic(cfg_dir, test_name)
+
+
+def param_extract_number(filename):
+    match = re.search(r'test_(\d+)', filename)
+    return int(match.group(1)) if match else float('inf')
+
+
+def sorted_param_files():
+    return sorted([resource.name for resource in files(settings.parameterized_tests_dir).iterdir()],
+                  key=param_extract_number)

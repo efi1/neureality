@@ -1,10 +1,8 @@
-import re
 from typing import Tuple
 import pytest
 import requests
 from requests import Response
-from tests.cfg.cfg_global import settings
-from importlib.resources import files
+from tests.conftest import sorted_param_files
 from conftest import get_param_data, logger
 from tests.utils.data_to_obj import data_object, ObjectLikeData, object_dump
 
@@ -22,20 +20,7 @@ def shared_test_logic(cfg_data: ObjectLikeData) -> Tuple[Response, ObjectLikeDat
     return response, expected_data
 
 
-def extract_number(filename):
-    match = re.search(r'test_(\d+)', filename)
-    return int(match.group(1)) if match else float('inf')
-
-sorted_files = sorted(
-    [resource.name for resource in files(settings.parameterized_tests_dir).iterdir()],
-    key=extract_number)
-
-
-# @pytest.mark.parametrize('test_name', sorted([resource.name
-#                                         for resource in files(settings.parameterized_tests_dir).iterdir()]))
-
-@pytest.mark.parametrize('test_name', sorted_files, scope="class")
-
+@pytest.mark.parametrize('test_name', sorted_param_files(), scope="class")
 class TestParameterized:
     def test_perform_tasks(self, app_container: object, test_name: str) -> None:
         """
