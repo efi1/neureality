@@ -1,3 +1,4 @@
+import json
 from typing import Tuple
 import pytest
 import requests
@@ -60,7 +61,7 @@ def test_negative_422_missing_required_field(app_container: object, load_test_da
          F"Error msg: {res_json.get('detail')[0].get('msg') if not res_json.get('result') else res_json.get('result')}.\n")
     # Check that the API response's content is as expected
     if expected_data.validate_resp_val:
-        assert res_json.get('result') == expected_data.return_value, (F"\nwrong response val: {res_json.get('result')}\n"
+        assert res_json.get('result').startswith(expected_data.return_value), (F"\nwrong response val: {res_json.get('result')}\n"
                                                                  F"expected: {expected_data.return_value}\n")
 
 
@@ -76,7 +77,7 @@ def test_negative_404_missing_string_input(app_container: object, load_test_data
          F"Error msg: {res_json.get('result')}.\n")
     # Check that the API response's content is as expected
     if expected_data.validate_resp_val:
-        assert res_json.get('result') == expected_data.return_value, (F"\nwrong response val: {res_json.get('result')}\n"
+        assert expected_data.return_value in res_json.get('result'), (F"\nwrong response val: {res_json.get('result')}\n"
                                                                  F"expected: {expected_data.return_value}\n")
 
 
@@ -84,7 +85,7 @@ def test_negative_405_wrong_request_method(app_container: object, load_test_data
     """  A GET request sent to an API path that expects POST """
     resp: Tuple[Response, ObjectLikeData] = shared_test_logic(load_test_data)
     response, expected_data = resp
-    res_json = response.json()
+    res_json = response.json().get('result')
     logger.info(F"response from api-client: {resp}")
     # Check that the API response is as expected
     assert response.status_code == expected_data.status_code, \
@@ -92,5 +93,5 @@ def test_negative_405_wrong_request_method(app_container: object, load_test_data
          F"Error msg: {res_json.get('detail')[0].get('msg') if not res_json.get('result') else res_json.get('result')}.\n")
     # Check that the API response's content is as expected
     if expected_data.validate_resp_val:
-        assert res_json.get('result') == expected_data.return_value, (F"\nwrong response val: {res_json.get('result')}\n"
+        assert expected_data.return_value in res_json, (F"\nwrong response val: {res_json.get('result')}\n"
                                                                  F"expected: {expected_data.return_value}\n")

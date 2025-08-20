@@ -4,8 +4,8 @@
         "request_type": "post"
     },
     "return_data": {
-        "return_value": null,
-        "status_code": 200,
+        "return_value": "Required field is missing: ['task_name']",
+        "status_code": 422,
 		"validate_resp_val": true
     },
     "api_path": "/api/task/reverse",

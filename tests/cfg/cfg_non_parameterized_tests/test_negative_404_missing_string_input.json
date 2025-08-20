@@ -5,8 +5,8 @@
         "request_type": "post"
     },
     "return_data": {
-        "return_value": null,
-        "status_code": 200,
+        "return_value": "no string was given",
+        "status_code": 404,
 		"validate_resp_val": true
     },
     "api_path": "/api/task/reverse"

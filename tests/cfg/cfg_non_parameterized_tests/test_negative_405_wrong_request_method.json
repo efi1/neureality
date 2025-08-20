@@ -5,8 +5,8 @@
         "request_type": "get"
     },
     "return_data": {
-        "return_value": "dog lazy the over jumps fox brown quick The",
-        "status_code": 200,
+        "return_value": "Method Not Allowed",
+        "status_code": 405,
 		"validate_resp_val": true
     },
     "api_path": "/api/task/reverse"
