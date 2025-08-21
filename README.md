@@ -344,6 +344,9 @@ The log file is generated in the ./logs/ directory, which is dynamically created
 
       python -m pip install . (include the dot at the end) — see elaboration below.
 
+    * alternativelly, you may use this:
+         pip install -e .
+
   * to uninstall it:
 
 
