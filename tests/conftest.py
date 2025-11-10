@@ -137,6 +137,7 @@ def app_container(request, docker_client, effective_settings):
         image_name = built_image.tags[0] if built_image.tags else image_id
 
     # start the container with auto_remove - delete the container after it stops
+    logger.info(f'creating container for image: {image_id or image_name}, ports: {vars(effective_settings.ports)}, network: {app_net_name}')
     container = client.containers.run(
         image_id or image_name,
         ports=vars(effective_settings.ports),
@@ -150,6 +151,7 @@ def app_container(request, docker_client, effective_settings):
     container_sleep_time = effective_settings.sleep_time
 
     try:
+        logger.info(f'checking container {container} healthy')
         if not is_container_healthy(container, container_timeout, container_sleep_time):
             raise RuntimeError(F"App container did not become available after {container_timeout} sec.")
 

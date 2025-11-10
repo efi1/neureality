@@ -13,7 +13,11 @@ class TaskInput(BaseModel):
         json_schema_extra = {
             "example": {
                 "task_name": "<task name>",
-                "task_parameters": {"param1": "param_val", "param2": "param_val", "n-th_param": "param_val"}
+                "task_parameters": {
+                    "param1": "param_val",
+                    "param2": "param_val",
+                    "n-th_param": "param_val"
+                }
             }
         }
 
