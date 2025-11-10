@@ -42,6 +42,7 @@ def get_self_network(docker_client):
         return None
 
     try:
+        logger.info('++++ getting network name')
         container = docker_client.containers.get(self_id)  # works with short ID
         networks = container.attrs["NetworkSettings"]["Networks"]
         logger.info(f'++++ networks is {networks}')
