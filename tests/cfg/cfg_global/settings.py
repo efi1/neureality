@@ -12,6 +12,6 @@ sleep_time = 1
 excluded_keywords = 'health'
 container_name = 'fastapi_app'
 host = 'localhost'
-use_local_image = True
+use_local_image = False
 dockerfile_name = 'Dockerfile'
 dockerfile_path = 'app'

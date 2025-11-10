@@ -44,16 +44,33 @@ def pytest_addoption(parser):
             help=f"Override {variable} (default: {resolved})"
         )
 
+def normalize(value, original_type):
+    if value is None:
+        return None
+    if original_type == bool:
+        return str(value).lower() in ("true", "1", "yes")
+    if original_type == int:
+        try:
+            return int(value)
+        except ValueError:
+            return value
+    if original_type == float:
+        try:
+            return float(value)
+        except ValueError:
+            return value
+    return value  # leave strings and others as-is
+
 @pytest.fixture(scope="session")
 def effective_settings(request):
     config = {}
     for variable in dir(settings):
         if variable.startswith("_"):
             continue
-        cli_value = request.config.getoption(f"--{variable}")
-        config[variable] = cli_value
-    return config
-
+        default = getattr(settings, variable)
+        raw = request.config.getoption(f"--{variable}")
+        config[variable] = normalize(raw, type(default))
+    return data_object(config)
 
 def is_container_healthy(container: object, timeout_seconds: int, interval: int = 1, elapsed: int = 0) -> bool:
     # Is the container in a healthy state after the wait period
@@ -79,7 +96,7 @@ def docker_client():
 
 
 def build_local_image(client, image_name, dockerfile_path, dockerfile_name):
-    print("Building Docker image...")
+    logger.info("Building Local Docker image...")
     build_context = Path(__file__).parent.parent
     if not build_context.is_dir():
         raise ValueError(f"Build context directory does not exist: {build_context}")
@@ -102,18 +119,19 @@ def build_local_image(client, image_name, dockerfile_path, dockerfile_name):
 
 
 @fixture(scope="session")
-def app_container(docker_client, request):
+def app_container(request, docker_client, effective_settings):
 
     client = docker_client
     app_net_name = get_docker_network.get_effective_network(client)
 
     image_id = None
-    image_name = request.config.getoption('image_remote_name')
-    use_local_image = request.config.getoption('use_local_image')
+    image_name = effective_settings.image_remote_name
+    use_local_image = effective_settings.use_local_image
+    logger.info(f'+++++++++++  use_local_image is {use_local_image}, {type(use_local_image)}')
 
     if use_local_image:
-        dockerfile_path = request.config.getoption('dockerfile_path')
-        dockerfile_name = request.config.getoption('dockerfile_name')
+        dockerfile_path = effective_settings.dockerfile_path
+        dockerfile_name = effective_settings.dockerfile_name
         built_image = build_local_image(client, image_name, dockerfile_path, dockerfile_name)
         image_id = built_image.id
         image_name = built_image.tags[0] if built_image.tags else image_id
@@ -121,16 +139,15 @@ def app_container(docker_client, request):
     # start the container with auto_remove - delete the container after it stops
     container = client.containers.run(
         image_id or image_name,
-        ports=request.config.getoption('ports'),
+        ports=vars(effective_settings.ports),
         detach=True,
         auto_remove=True,
         network=app_net_name,
-        name=request.config.getoption('container_name')
+        name=effective_settings.container_name
     )
 
-    container_timeout = request.config.getoption('container_timeout')
-    container_sleep_time = request.config.getoption('sleep_time')
-    print('')
+    container_timeout = effective_settings.container_timeout
+    container_sleep_time = effective_settings.sleep_time
 
     try:
         if not is_container_healthy(container, container_timeout, container_sleep_time):
@@ -187,40 +204,47 @@ def read_json_file(path: Path) -> dict:
     return data
 
 
-def share_get_data_logic(request, cfg_dir: str, test_name: str) -> ObjectLikeData:
-    """shared logic in reading the cfg test data and convert it to a class data object  """
+def share_get_data_logic(effective_settings: ObjectLikeData, cfg_dir: str, test_name: str) -> ObjectLikeData:
+    """
+    shared logic in reading the cfg test data and convert it to a class data object
+    :param effective_settings: an object which contains configuration values.
+    :param cfg_dir: test config folder
+    :param test_name: test name
+    """
     cfg_file: Path | Traversable = files(cfg_dir).joinpath(test_name)
     if cfg_file.exists():
         json_params = read_json_file(cfg_file)
-        base_url = request.config.getoption('base_url_inner_container') if get_docker_network.is_running_in_container() \
-        else request.config.getoption('base_url')
+        base_url = effective_settings.base_url_inner_container if get_docker_network.is_running_in_container() \
+        else effective_settings.base_url
         json_params['base_url'] = base_url
         return data_object(json_params) # create an object with the test data
     raise ValueError(f'Test {test_name} has no data – please check the test input file')
 
 
 @fixture(scope="function")
-def load_test_data(request) -> ObjectLikeData:
+def load_test_data(request: object, effective_settings: ObjectLikeData) -> ObjectLikeData:
     """
     Rendering config data out of a template cfg file - for non parameterized test
+    :param request: a built-in fixture that provides access to information about the current test context
+    :param effective_settings: asn object which contains configuration values.
     :return: tests data as a class object
     """
     test_name = request.node.name
     logging.info(F"load cfg_data for {test_name}")
-    cfg_dir = request.config.getoption('non_parameterized_tests_dir')
-    return share_get_data_logic(request, cfg_dir, f'{test_name}.json')
+    cfg_dir = effective_settings.non_parameterized_tests_dir
+    return share_get_data_logic(effective_settings, cfg_dir, f'{test_name}.json')
 
 
-def get_param_data(request, test_name: str) -> ObjectLikeData:
+def get_param_data(effective_settings: ObjectLikeData, test_name: str) -> ObjectLikeData:
     """
     Rendering config data out of a template cfg file - for parameterized test
-    :param request: a built-in fixture that provides access to the context of the test function
+    :param effective_settings: asn object which contains configuration values.
     :param test_name: name as given by test when it is being executed
     :return: tests data as a class object
     """
     logging.info(F"load cfg_data for {test_name.split('.')[0]}")
-    cfg_dir = request.config.getoption('parameterized_tests_dir')
-    return share_get_data_logic(request, cfg_dir, test_name)
+    cfg_dir = effective_settings.parameterized_tests_dir
+    return share_get_data_logic(effective_settings, cfg_dir, test_name)
 
 
 def param_extract_number(filename):

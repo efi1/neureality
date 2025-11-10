@@ -19,14 +19,14 @@ def shared_test_logic(cfg_data: ObjectLikeData) -> Tuple[Response, ObjectLikeDat
 
 
 class TestParameterized:
-    def test_perform_tasks(self, request, app_container: object, test_name: str) -> None:
+    def test_perform_tasks(self, effective_settings: ObjectLikeData, app_container: object, test_name: str) -> None:
         """
         Testing various task using the files in app.cfg.cfg_parameterized_tests as an input (parameterized test)
         :param app_container: the docker container in which the app resides in
         :param test_name: test name as taken from the file names resides in tests.cfg.cfg_parameterized_tests folder
         :return: no return - assertion is made on the api response
         """
-        cfg_data: ObjectLikeData = get_param_data(request, test_name=test_name) # get the test data
+        cfg_data: ObjectLikeData = get_param_data(effective_settings, test_name=test_name) # get the test data
         resp: Tuple[Response, ObjectLikeData] = shared_test_logic(cfg_data)
         response, expected_data = resp
         res_json = response.json()
