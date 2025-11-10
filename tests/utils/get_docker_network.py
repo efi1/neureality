@@ -48,7 +48,8 @@ def get_self_network(docker_client):
         networks = container.attrs["NetworkSettings"]["Networks"]
         logger.info(f'++++ networks: {networks}')
         return list(networks.keys())[0] if networks else None
-    except docker.errors.NotFound:
+    except docker.errors.NotFound as e:
+        logger.info(f'++++ Error om get_self_network: {e}')
         return None
 
 
