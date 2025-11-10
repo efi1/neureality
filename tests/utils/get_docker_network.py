@@ -1,6 +1,10 @@
+import logging
 import os
 import docker
 import docker.errors
+
+
+logger = logging.getLogger(__name__)
 
 
 def is_running_in_container():
@@ -32,12 +36,15 @@ def get_self_container_id():
 def get_self_network(docker_client):
     """If running in container, return its first network."""
     self_id = get_self_container_id()
+    logger.info(f'++++ HOSTNAME is {self_id}')
+
     if not self_id:
         return None
 
     try:
         container = docker_client.containers.get(self_id)  # works with short ID
         networks = container.attrs["NetworkSettings"]["Networks"]
+        logger.info(f'++++ networks is {networks}')
         return list(networks.keys())[0] if networks else None
     except docker.errors.NotFound:
         return None
@@ -56,6 +63,7 @@ def get_effective_network(docker_client):
     """Return network name depending on environment."""
     if is_running_in_container():
         net = get_self_network(docker_client)
+        logger.info(f'++++ running within a container, net is {net}')
         if net:
             return net
     return get_host_network(docker_client)
