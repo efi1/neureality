@@ -3,13 +3,20 @@ import os
 import docker
 import docker.errors
 
+
 logger = logging.getLogger(__name__)
 
+
 def is_running_in_container():
-    """Detect if running inside a Docker (or containerized) environment."""
+    """
+    Detect if running inside a Docker (or containerized) environment.
+    Returns True if inside a container, False otherwise.
+    """
+    # Check for the /.dockerenv file
     if os.path.exists("/.dockerenv"):
         return True
 
+    # Check /proc/1/cgroup for docker/kubepods indicators
     try:
         with open("/proc/1/cgroup", "rt") as f:
             for line in f:
@@ -20,38 +27,31 @@ def is_running_in_container():
 
     return False
 
-def get_self_container_id():
-    """Return current container ID (short or full)."""
-    try:
-        with open("/proc/self/cgroup", "rt") as f:
-            for line in f:
-                parts = line.strip().split('/')
-                for part in parts:
-                    if len(part) == 64:  # full container ID
-                        return part
-                    elif len(part) == 12:  # short ID
-                        return part
-    except Exception as e:
-        logger.warning(f"Could not read container ID: {e}")
 
-    return None
+def get_self_container_id():
+    """Return current container ID (short)."""
+    return os.environ.get("HOSTNAME")
+
 
 def get_self_network(docker_client):
     """If running in container, return its first network."""
     self_id = get_self_container_id()
-    logger.info(f'++++ Container ID is {self_id}')
+    logger.info(f'++++ HOSTNAME is {self_id}')
 
     if not self_id:
         return None
 
     try:
-        container = docker_client.containers.get(self_id)
+        logger.info('++++ getting network name')
+        container = docker_client.containers.get(self_id)  # works with short ID
+        logger.info(f'++++ container: {container}')
         networks = container.attrs["NetworkSettings"]["Networks"]
         logger.info(f'++++ networks: {networks}')
         return list(networks.keys())[0] if networks else None
     except docker.errors.NotFound as e:
         logger.info(f'++++ Error on get_self_network: {e}')
         return None
+
 
 def get_host_network(docker_client):
     """If running on host, return default bridge network."""
@@ -61,7 +61,8 @@ def get_host_network(docker_client):
     except docker.errors.NotFound:
         return None
 
-def get_effective_network(docker_client):
+
+def get_effective_network(docker_client, network_name):
     """Return network name depending on environment."""
     if is_running_in_container():
         net = get_self_network(docker_client)
@@ -69,3 +70,4 @@ def get_effective_network(docker_client):
         if net:
             return net
     return get_host_network(docker_client)
+
