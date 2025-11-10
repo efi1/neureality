@@ -122,7 +122,7 @@ def build_local_image(client, image_name, dockerfile_path, dockerfile_name):
 def app_container(request, docker_client, effective_settings):
 
     client = docker_client
-    app_net_name = get_docker_network.get_effective_network(client)
+    app_net_name = get_docker_network.get_effective_network(client, network_name=effective_settings.container_net_name)
 
     image_id = None
     image_name = effective_settings.image_remote_name

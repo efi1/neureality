@@ -11,6 +11,7 @@ container_timeout = 10
 sleep_time = 1
 excluded_keywords = 'health'
 container_name = 'fastapi_app'
+container_net_name = 'my_jenkins_default'
 host = 'localhost'
 use_local_image = False
 dockerfile_name = 'Dockerfile'
