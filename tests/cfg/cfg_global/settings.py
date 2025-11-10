@@ -1,7 +1,9 @@
 parameterized_tests_dir = 'tests.cfg.cfg_parameterized_tests'
 non_parameterized_tests_dir = 'tests.cfg.cfg_non_parameterized_tests'
-image_name = 'efiradware/reverse-restore-app:latest'
+image_name = 'reverse-restore-app'
+image_remote_name = f'efiradware/{{image_name}}:latest'
 external_port = 8000  # the default port which FastAPI app (Uvicorn) runs inside the container
+base_url_inner_container = f'http://{{container_name}}:{external_port}'
 base_url = f'http://{{host}}:{external_port}'
 ports = {"8000/tcp": external_port}
 success_resp = 200
@@ -10,3 +12,6 @@ sleep_time = 1
 excluded_keywords = 'health'
 container_name = 'fastapi_app'
 host = 'localhost'
+use_local_image = True
+dockerfile_name = 'Dockerfile'
+dockerfile_path = 'app'

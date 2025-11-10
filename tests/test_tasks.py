@@ -1,10 +1,8 @@
 from typing import Tuple
-import pytest
 import requests
 from requests import Response
-from tests.conftest import sorted_param_files
 from conftest import get_param_data, logger
-from tests.utils.data_to_obj import data_object, ObjectLikeData, object_dump
+from tests.utils.data_to_obj import ObjectLikeData, object_dump
 
 
 def shared_test_logic(cfg_data: ObjectLikeData) -> Tuple[Response, ObjectLikeData]:
@@ -20,16 +18,15 @@ def shared_test_logic(cfg_data: ObjectLikeData) -> Tuple[Response, ObjectLikeDat
     return response, expected_data
 
 
-@pytest.mark.parametrize('test_name', sorted_param_files(), scope="class")
 class TestParameterized:
-    def test_perform_tasks(self, app_container: object, test_name: str) -> None:
+    def test_perform_tasks(self, request, app_container: object, test_name: str) -> None:
         """
         Testing various task using the files in app.cfg.cfg_parameterized_tests as an input (parameterized test)
         :param app_container: the docker container in which the app resides in
         :param test_name: test name as taken from the file names resides in tests.cfg.cfg_parameterized_tests folder
         :return: no return - assertion is made on the api response
         """
-        cfg_data: data_object = get_param_data(test_name=test_name) # get the test data
+        cfg_data: ObjectLikeData = get_param_data(request, test_name=test_name) # get the test data
         resp: Tuple[Response, ObjectLikeData] = shared_test_logic(cfg_data)
         response, expected_data = resp
         res_json = response.json()
