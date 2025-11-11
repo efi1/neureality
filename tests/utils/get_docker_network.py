@@ -41,6 +41,7 @@ def get_effective_network(docker_client, network_name="bridge"):
     Otherwise, return the default host network (usually 'bridge').
     """
     if is_running_in_container():
+        logger.info(F"++++ running inside a container, using given network: {network_name}")
         return network_name
     else:
         logger.info("++++ running on host, using default network")
