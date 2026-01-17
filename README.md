@@ -344,11 +344,13 @@ The log file is generated in the ./logs/ directory, which is dynamically created
 
       python -m pip install . (include the dot at the end) — see elaboration below.
 
+    * using the new fast Python package - uv:
+        uv add .
+
     * alternativelly, you may use this:
          pip install -e .
 
   * to uninstall it:
-
 
         python -m pip uninstall NeuRealityProject
 
