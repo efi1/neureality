@@ -90,3 +90,6 @@ def test_negative_405_wrong_request_method(app_container: object, load_test_data
     if expected_data.validate_resp_val:
         assert expected_data.return_value in res_json, (F"\nwrong response val: {res_json.get('result')}\n"
                                                                  F"expected: {expected_data.return_value}\n")
+
+def test_should_fail():
+    assert 1 == 2, "Expected 1 to be 2, but it was not"
